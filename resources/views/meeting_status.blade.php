@@ -17,6 +17,7 @@
                     <th>Booking Date</th>
                     <th>Time From</th>
                     <th>Time To</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -26,6 +27,7 @@
                     <td>{{ $booking->book_date }}</td>
                     <td>{{ $booking->time_from }}</td>
                     <td>{{ $booking->time_to }}</td>
+                    <td>{{ $booking->status ?? 'N/A' }}</td>
                 </tr>
             @endforeach
             </tbody>
