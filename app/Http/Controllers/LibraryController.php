@@ -129,6 +129,14 @@ class LibraryController extends Controller
         $request->validate([
             'book_id' => 'required|integer',
         ]);
+        // Prevent borrowing the same book if status is BORROWING or OVERDUE
+        $activeBorrow = Borrowing::where('USER_ID', $studentId)
+            ->where('BOOK_ID', $request->book_id)
+            ->whereIn('STATUS', ['BORROWING', 'OVERDUE'])
+            ->exists();
+        if ($activeBorrow) {
+            return redirect()->route('browse.books')->with('error', 'You cannot borrow this book again until you return it.');
+        }
         // Count current borrowed books (pending or approved)
         $borrowedCount = BookRequest::where('STUDENT_ID', $studentId)
             ->whereIn('STATUS', ['Pending', 'Approved'])
@@ -199,8 +207,15 @@ class LibraryController extends Controller
         if (!$request->session()->has('student_id')) {
             return redirect()->route('login');
         }
-        // Placeholder: show a simple view
-        return view('meeting_status');
+        $studentId = $request->session()->get('student_id');
+        // Fetch meeting room bookings for the student
+        $bookings = DB::table('TBL_ROOM_BOOKING')
+            ->where('USER_ID', $studentId)
+            ->orderByDesc('BOOK_DATE')
+            ->get();
+        return view('meeting_status', [
+            'bookings' => $bookings,
+        ]);
     }
 
     public function extendRequest(Request $request)

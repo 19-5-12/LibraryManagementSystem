@@ -12,6 +12,12 @@
 </head>
 <body>
 <div class="container py-4">
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
     <h2 class="text-center mb-4">Library Management System</h2>
     <ul class="nav nav-tabs justify-content-center mb-4">
         <li class="nav-item">
