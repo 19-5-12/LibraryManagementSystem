@@ -16,10 +16,6 @@ Route::post('/student/register', [StudentController::class, 'register']);
 Route::get('/login', [LibraryController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LibraryController::class, 'login']);
 
-// Book Borrowing
-Route::get('/borrow', [LibraryController::class, 'showBorrowForm'])->name('borrow.form');
-Route::post('/borrow', [LibraryController::class, 'borrowBook'])->name('borrow');
-
 // Meeting Room Booking
 Route::get('/meeting', [LibraryController::class, 'showMeetingForm'])->name('meeting.form');
 Route::post('/meeting', [LibraryController::class, 'bookMeetingRoom'])->name('meeting');
@@ -33,6 +29,9 @@ Route::post('/request-book', [LibraryController::class, 'requestBook'])->name('r
 
 // Meeting Room Booking Status (placeholder route)
 Route::get('/meeting-status', [LibraryController::class, 'meetingStatus'])->name('meeting.status');
+
+// Extend Request
+Route::post('/extend-request', [LibraryController::class, 'extendRequest'])->name('extend.request');
 
 // Logout
 Route::post('/logout', [LibraryController::class, 'logout'])->name('logout');

@@ -32,7 +32,7 @@ class Student extends Model
 
     protected $casts = [
         'TIME_IN' => 'datetime',
-        'REGISTERED_DATE' => 'date',
+        'REGISTERED_DATE' => 'datetime',
         'STUDENT_ID' => 'integer'
     ];
 } 

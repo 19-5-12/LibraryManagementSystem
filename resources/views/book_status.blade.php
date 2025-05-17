@@ -12,6 +12,12 @@
 </head>
 <body>
 <div class="container py-4">
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
     <h2 class="text-center mb-4">Library Management System</h2>
     <ul class="nav nav-tabs justify-content-center mb-4">
         <li class="nav-item">
@@ -37,18 +43,32 @@
                 <td>{{ $book->author }}</td>
                 <td>{{ $book->date_borrowed }}</td>
                 <td>
-                    @php
-                        $status = strtoupper($book->status);
-                    @endphp
-                    @if($status === 'ACCEPTED' || $status === 'APPROVED')
+                    @if($book->status === 'Approved')
                         <span class="badge bg-success">{{ $book->status }}</span>
-                    @elseif($status === 'PENDING')
-                        <span class="badge bg-warning text-dark">PENDING</span>
+                        @if(isset($pendingExtends[$book->request_id]))
+                            @php $ext = $pendingExtends[$book->request_id]; @endphp
+                            @if($ext->status === 'Pending')
+                                <span class="badge bg-warning text-dark ms-2">Extend Return Due Pending</span>
+                            @elseif($ext->status === 'Approved')
+                                <span class="badge bg-success ms-2">Extend Return Due Approved</span>
+                            @elseif($ext->status === 'Declined')
+                                <span class="badge bg-danger ms-2">Extend Return Due Declined</span>
+                            @endif
+                        @else
+                            <form action="{{ route('extend.request') }}" method="POST" class="d-inline ms-2">
+                                @csrf
+                                <input type="hidden" name="request_id" value="{{ $book->request_id }}">
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Extend Return Due Request</button>
+                            </form>
+                        @endif
+                    @elseif($book->status === 'Pending')
+                        <span class="badge bg-warning text-dark">Pending</span>
                     @else
                         <span class="badge bg-danger">{{ $book->status }}</span>
                     @endif
                 </td>
             </tr>
+            {{-- DEBUG: REQUEST_ID = {{ $book->request_id }} --}}
         @endforeach
         </tbody>
     </table>

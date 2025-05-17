@@ -17,21 +17,18 @@ class StudentController extends Controller
 
     public function register(Request $request)
     {
-        Log::info('Registration attempt', ['data' => $request->all()]);
-
         $request->validate([
             'STUDENT_ID' => 'required|numeric|unique:TBL_STUDENT,STUDENT_ID',
-            'LAST_NAME' => 'required|string|max:255',
-            'FIRST_NAME' => 'required|string|max:255',
-            'MIDDLE_NAME' => 'nullable|string|max:255',
-            'SEX' => 'required|in:M,F',
-            'CONTACT_NUMBER' => 'required|string|max:20',
-            'EMAIL' => 'required|email|unique:TBL_STUDENT,EMAIL',
+            'LAST_NAME' => 'required|string|max:55',
+            'FIRST_NAME' => 'required|string|max:55',
+            'MIDDLE_NAME' => 'nullable|string|max:55',
+            'SEX' => 'required|string|max:11',
+            'EMAIL' => 'required|email|unique:TBL_STUDENT,EMAIL|max:255',
+            'CONTACT_NUMBER' => 'required|string|max:13',
             'password' => 'required|string|max:30',
         ]);
 
         try {
-            Log::info('Validation passed, creating student');
             $student = new Student();
             $student->STUDENT_ID = (int)$request->STUDENT_ID;
             $student->LAST_NAME = $request->LAST_NAME;
@@ -40,21 +37,21 @@ class StudentController extends Controller
             $student->SEX = $request->SEX;
             $student->CONTACT_NUMBER = $request->CONTACT_NUMBER;
             $student->EMAIL = $request->EMAIL;
-            $student->TIME_IN = Carbon::now();
-            $student->REGISTERED_DATE = Carbon::now();
             $student->PASSWORD = $request->password;
-            $student->STUDENT_STATUS = 'Active';
-            $student->ADDRESS = 101;
+            $student->STUDENT_STATUS = 'Studying';
             $student->CAMPUS_ID = 1;
-            $student->GRADUATION_YEAR = Carbon::now()->addYears(4)->year;
+            $student->ADDRESS = null;
+            $student->TIME_IN = null;
+            $student->REGISTERED_DATE = now();
+            $student->GRADUATION_YEAR = now()->addYears(4);
 
             $student->save();
-            Log::info('Student saved successfully');
 
-            return redirect()->route('student.register')
-                ->with('success', 'Registration successful! You can now login.');
+            // Optionally, log the user in after registration
+            $request->session()->put('student_id', $student->STUDENT_ID);
+
+            return redirect()->route('browse.books')->with('success', 'Registration successful! You can now login.');
         } catch (\Exception $e) {
-            Log::error('Registration failed', ['error' => $e->getMessage()]);
             return redirect()->route('student.register')
                 ->with('error', 'Registration failed: ' . $e->getMessage());
         }
