@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use App\Models\Borrowing;
+use App\Models\BookRequest;
+use Carbon\Carbon;
 
 class LibraryController extends Controller
 {
@@ -77,27 +79,88 @@ class LibraryController extends Controller
     }
 
     // Show browse books page
-    public function browseBooks()
+    public function browseBooks(Request $request)
     {
-        // Fetch books from the BOOKS table (assume columns: id, title, author, description, year, genre)
+        // No login check here!
+        $studentId = $request->session()->get('student_id');
         $books = DB::table('TBL_BOOKS')->get();
-        // Fetch borrowed book ids
-        $borrowedBookIds = Borrowing::whereNull('RETURN_DATE')->pluck('BOOK_ID')->toArray();
-        // Add status to each book
-        $books = $books->map(function ($book) use ($borrowedBookIds) {
-            $book->status = in_array($book->id, $borrowedBookIds) ? 'borrowed' : 'available';
+        $pendingRequests = [];
+        if ($studentId) {
+            $pendingRequests = BookRequest::where('STUDENT_ID', $studentId)
+                ->where('STATUS', 'PENDING')
+                ->pluck('BOOK_ID')->toArray();
+        }
+        $books = $books->map(function ($book) use ($pendingRequests) {
+            if (in_array($book->book_id, $pendingRequests)) {
+                $book->status = 'pending';
+            } else {
+                $book->status = 'available';
+            }
             return $book;
         });
-        return view('browse_books', ['books' => $books]);
+        return view('browse_books', ['books' => $books, 'studentId' => $studentId]);
+    }
+
+    public function requestBook(Request $request)
+    {
+        if (!$request->session()->has('student_id')) {
+            return redirect()->route('login');
+        }
+        $studentId = $request->session()->get('student_id');
+        $request->validate([
+            'book_id' => 'required|integer',
+        ]);
+        $exists = BookRequest::where('STUDENT_ID', $studentId)
+            ->where('BOOK_ID', $request->book_id)
+            ->where('STATUS', 'PENDING')
+            ->exists();
+        if (!$exists) {
+            BookRequest::create([
+                'STUDENT_ID' => $studentId,
+                'REQUEST_DATE' => Carbon::now(),
+                'STATUS' => 'PENDING',
+                'BOOK_ID' => $request->book_id,
+                'RESOLUTION_DATE' => null,
+            ]);
+        }
+        return redirect()->route('browse.books');
     }
 
     // Show book status page
-    public function bookStatus()
+    public function bookStatus(Request $request)
     {
-        // Fetch borrowed books for the current user (for demo, fetch all)
-        $borrowedBooks = Borrowing::join('BOOKS', 'BORROWING.BOOK_ID', '=', 'BOOKS.id')
-            ->select('BOOKS.title', 'BOOKS.author', 'BORROWING.BORROW_DATE as date_borrowed', 'BORROWING.STATUS as status')
-            ->get();
+        if (!$request->session()->has('student_id')) {
+            return redirect()->route('login');
+        }
+        $studentId = $request->session()->get('student_id');
+        $borrowedBooks = BookRequest::join('TBL_BOOKS', 'TBL_BOOK_REQUEST.book_id', '=', 'TBL_BOOKS.book_id')
+            ->where('TBL_BOOK_REQUEST.student_id', $studentId)
+            ->select(
+                'TBL_BOOKS.title as title',
+                'TBL_BOOKS.author as author',
+                'TBL_BOOK_REQUEST.request_date as date_borrowed',
+                'TBL_BOOK_REQUEST.status as status'
+            )
+            ->get()
+            ->unique(function ($item) {
+                return $item->title . '|' . $item->author . '|' . $item->date_borrowed . '|' . $item->status;
+            })
+            ->values();
         return view('book_status', ['borrowedBooks' => $borrowedBooks]);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->session()->flush();
+        return redirect()->route('login');
+    }
+
+    public function meetingStatus(Request $request)
+    {
+        if (!$request->session()->has('student_id')) {
+            return redirect()->route('login');
+        }
+        // Placeholder: show a simple view
+        return view('meeting_status');
     }
 } 

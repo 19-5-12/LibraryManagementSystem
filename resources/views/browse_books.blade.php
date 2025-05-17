@@ -1,3 +1,4 @@
+@include('layouts.navbar')
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,10 +28,20 @@
                     <div class="card-body">
                         <h5 class="card-title text-primary">{{ $book->title }}</h5>
                         <h6 class="card-subtitle mb-2 text-muted">by {{ $book->author }}</h6>
-                        <p class="card-text">{{ $book->description }}</p>
-                        <p class="mb-1"><strong>Year:</strong> {{ $book->year }} • <strong>Genre:</strong> {{ $book->genre }}</p>
+                        <p class="card-text">{{ $book->description ?? '' }}</p>
+                        <p class="mb-1"><strong>Year:</strong> {{ isset($book->publication_year) ? date('Y', strtotime($book->publication_year)) : '' }} • <strong>Genre:</strong> {{ $book->category ?? '' }}</p>
                         @if($book->status === 'available')
-                            <button class="btn btn-primary">Borrow</button>
+                            @if($studentId)
+                                <form action="{{ route('request.book') }}" method="POST" onsubmit="this.querySelector('button[type=submit]').disabled=true; return confirm('Are you sure you want to borrow this book?');">
+                                    @csrf
+                                    <input type="hidden" name="book_id" value="{{ $book->book_id }}">
+                                    <button type="submit" class="btn btn-primary">Borrow</button>
+                                </form>
+                            @else
+                                <a href="{{ route('login') }}" class="btn btn-primary">Borrow</a>
+                            @endif
+                        @elseif($book->status === 'pending')
+                            <button class="btn btn-warning" disabled>Pending</button>
                         @else
                             <button class="btn btn-secondary" disabled>Borrowed</button>
                         @endif

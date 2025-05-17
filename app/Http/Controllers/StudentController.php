@@ -27,7 +27,7 @@ class StudentController extends Controller
             'SEX' => 'required|in:M,F',
             'CONTACT_NUMBER' => 'required|string|max:20',
             'EMAIL' => 'required|email|unique:TBL_STUDENT,EMAIL',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => 'required|string|max:30',
         ]);
 
         try {

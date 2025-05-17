@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Borrowing extends Model
 {
-    protected $table = 'BORROWING';
+    protected $table = 'TBL_BORROWING';
     protected $primaryKey = 'BORROWING_ID';
     public $incrementing = true;
     public $timestamps = false;

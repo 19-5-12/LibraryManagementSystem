@@ -27,3 +27,12 @@ Route::post('/meeting', [LibraryController::class, 'bookMeetingRoom'])->name('me
 // Browse Books and Book Status
 Route::get('/browse-books', [LibraryController::class, 'browseBooks'])->name('browse.books');
 Route::get('/book-status', [LibraryController::class, 'bookStatus'])->name('book.status');
+
+// Request a book
+Route::post('/request-book', [LibraryController::class, 'requestBook'])->name('request.book');
+
+// Meeting Room Booking Status (placeholder route)
+Route::get('/meeting-status', [LibraryController::class, 'meetingStatus'])->name('meeting.status');
+
+// Logout
+Route::post('/logout', [LibraryController::class, 'logout'])->name('logout');

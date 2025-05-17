@@ -1,3 +1,4 @@
+@include('layouts.navbar')
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,12 +37,15 @@
                 <td>{{ $book->author }}</td>
                 <td>{{ $book->date_borrowed }}</td>
                 <td>
-                    @if($book->status === 'ACCEPTED')
-                        <span class="badge bg-success">ACCEPTED</span>
-                    @elseif($book->status === 'PENDING')
+                    @php
+                        $status = strtoupper($book->status);
+                    @endphp
+                    @if($status === 'ACCEPTED' || $status === 'APPROVED')
+                        <span class="badge bg-success">{{ $book->status }}</span>
+                    @elseif($status === 'PENDING')
                         <span class="badge bg-warning text-dark">PENDING</span>
                     @else
-                        <span class="badge bg-danger">REJECTED</span>
+                        <span class="badge bg-danger">{{ $book->status }}</span>
                     @endif
                 </td>
             </tr>
